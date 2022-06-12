@@ -1,9 +1,12 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 
-const formRoutes = require("./routes/form");
+const Player = require("./models/Player");
+const sequelize = require("./util/database");
 
 const app = express();
+
+const formRoutes = require("./routes/form");
 
 app.use(bodyParser.json());
 
@@ -16,6 +19,13 @@ app.use((req, res, next) => {
 
 app.use(formRoutes);
 
-app.listen(8080);
-
-console.log("Listening on port 8080");
+sequelize
+  .sync()
+  .then((result) => {
+    console.log(sequelize.models);
+    app.listen(8080);
+    console.log("Listening on port 8080");
+  })
+  .catch((err) => {
+    console.log(err);
+  });
