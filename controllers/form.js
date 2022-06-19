@@ -8,16 +8,14 @@ exports.getPlayer = (req, res, next) => {
 };
 
 exports.postPlayer = (req, res, next) => {
-  const errors = validationResult(req);
+  const validationErrors = validationResult(req);
 
-  if (!errors.isEmpty()) {
-    console.log(errors.array());
-    res.status(422).json({
-      message: "Preencha o formulário corretamente!",
-    });
-    return;
+  if (!validationErrors.isEmpty()) {
+    console.log(validationErrors.array());
+    const error = new Error("Por favor, preencha o formulário corretamente");
+    error.statusCode = 422;
+    throw error;
   }
-
   Player.create({
     name: req.body.name,
     number: req.body.number,
@@ -27,7 +25,10 @@ exports.postPlayer = (req, res, next) => {
       console.log(result);
     })
     .catch((err) => {
-      console.log(err);
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
     });
   res.status(201).json({
     message: "User saved!",
